@@ -12,7 +12,7 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: quarto-dev/quarto-actions/setup@v2
 
@@ -20,13 +20,13 @@ jobs:
         uses: quarto-dev/quarto-actions/render@v2
 
       - name: Upload preview artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: site-preview
           path: _site/
 
       - name: Comment on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: preview
           message: |
