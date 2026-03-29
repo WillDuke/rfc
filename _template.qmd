@@ -1,0 +1,34 @@
+---
+title: "RFC-XXXX: Title"
+author: "Your Name"
+date: last-modified
+status: Draft
+subtitle: "Draft"
+body-classes: status-draft
+categories: [project-name]
+---
+
+## Summary
+
+A brief one-paragraph explanation of the proposal.
+
+## Motivation
+
+Why are we doing this? What problem does it solve? What use cases does it support?
+
+## Detailed Design
+
+Describe the design in enough detail that someone familiar with the system can implement it. Include:
+
+- API changes
+- Data model changes
+- Component interactions
+- Error handling
+
+## Alternatives Considered
+
+What other approaches were considered and why were they rejected?
+
+## Open Questions
+
+- List any unresolved questions or decisions that need further discussion.

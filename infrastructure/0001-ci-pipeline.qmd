@@ -1,0 +1,103 @@
+---
+title: "RFC-0001: CI/CD Pipeline Design"
+author: "Carol Zhang"
+date: 2025-02-20
+status: Draft
+subtitle: "Draft"
+body-classes: status-draft
+categories: [infrastructure, ci-cd]
+---
+
+## Summary
+
+Design a standardized CI/CD pipeline using GitHub Actions that supports monorepo builds, parallel testing, and automated deployments to staging and production environments.
+
+## Motivation
+
+Current CI/CD is fragmented: some services use Jenkins, others use ad-hoc GitHub Actions workflows, and deployment processes are manual. This leads to:
+
+- Inconsistent build and test practices across teams
+- Slow feedback loops (some pipelines take 30+ minutes)
+- Manual, error-prone deployments
+
+A unified pipeline will standardize how code is built, tested, and deployed.
+
+## Detailed Design
+
+### Pipeline Stages
+
+```{mermaid}
+graph LR
+    Commit([Commit]) --> Lint[Lint]
+    Commit --> Test[Unit Test]
+    Lint --> Build[Build]
+    Test --> Build
+    Build --> DeployStg[Deploy Staging]
+    DeployStg --> IntTest[Integration Test]
+    IntTest --> Gate{Manual\nApproval}
+    Gate -->|Approved| DeployProd[Deploy Prod]
+    Gate -->|Rejected| Stop([Stop])
+
+    style Gate fill:#fff3cd,stroke:#664d03
+    style DeployProd fill:#d1e7dd,stroke:#0f5132
+    style Stop fill:#f8d7da,stroke:#842029
+```
+
+### Change Detection
+
+For the monorepo, the pipeline detects which services changed and only builds/tests those:
+
+```yaml
+on:
+  push:
+    paths:
+      - 'services/auth/**'
+      - 'services/api/**'
+      - 'libs/shared/**'
+```
+
+Changes to `libs/shared/` trigger builds for all dependent services.
+
+```{mermaid}
+graph TD
+    Shared[libs/shared] --> Auth[services/auth]
+    Shared --> API[services/api]
+    Shared --> Billing[services/billing]
+
+    Auth --> AuthBuild[Build Auth]
+    API --> APIBuild[Build API]
+    Billing --> BillingBuild[Build Billing]
+
+    style Shared fill:#cff4fc,stroke:#055160
+```
+
+### Parallel Execution
+
+- Linting and unit tests run in parallel across all affected services
+- Integration tests run after all service builds complete
+- Deployment is sequential: staging first, then production after approval
+
+### Environment Promotion
+
+| Environment  | Trigger                    | Approval     |
+|-------------|----------------------------|--------------|
+| Staging      | Push to `main`             | Automatic    |
+| Production   | Staging tests pass         | Manual gate  |
+
+### Caching Strategy
+
+- **Dependencies**: Cache `node_modules` / Go modules by lockfile hash
+- **Docker layers**: Use GitHub Actions cache for Docker build layers
+- **Build artifacts**: Cache compiled outputs between stages
+
+## Alternatives Considered
+
+- **GitLab CI**: Would require migrating repositories; GitHub Actions has sufficient capability.
+- **ArgoCD for everything**: Better suited for Kubernetes deployments but doesn't replace CI for build/test stages.
+- **Per-repo pipelines**: Simpler initially but leads to drift and duplication across teams.
+
+## Open Questions
+
+- Should we use self-hosted runners for performance-sensitive builds, or are GitHub-hosted runners sufficient?
+- How do we handle database migrations in the pipeline?
+- What's the rollback strategy if a production deployment fails?

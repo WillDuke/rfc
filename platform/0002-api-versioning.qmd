@@ -1,0 +1,99 @@
+---
+title: "RFC-0002: API Versioning Strategy"
+author: "Bob Martinez"
+date: 2025-03-10
+status: Review
+subtitle: "Review"
+body-classes: status-review
+categories: [platform, api]
+---
+
+## Summary
+
+Adopt a URL-based API versioning strategy (`/v1/`, `/v2/`) for all public-facing platform APIs, with a defined deprecation lifecycle.
+
+## Motivation
+
+As the platform grows, breaking changes to APIs are inevitable. Without a clear versioning strategy, clients break unexpectedly and the team lacks guidance on when and how to evolve APIs.
+
+Goals:
+
+- Give consumers clear, stable API contracts
+- Provide a migration path when breaking changes are necessary
+- Establish a deprecation timeline so old versions don't live forever
+
+## Detailed Design
+
+### Versioning Scheme
+
+All public APIs include a version prefix in the URL path:
+
+```
+https://api.example.com/v1/resources
+https://api.example.com/v2/resources
+```
+
+### Version Lifecycle
+
+```{mermaid}
+stateDiagram-v2
+    [*] --> Current
+    Current --> Supported : New major version released
+    Supported --> Deprecated : 12 months
+    Deprecated --> Removed : 6 months
+    Removed --> [*]
+
+    Current : Actively developed
+    Current : Receives all fixes
+    Supported : Security & critical fixes only
+    Deprecated : No fixes, Sunset header
+    Removed : Returns 410 Gone
+```
+
+| Phase        | Duration   | Description                                  |
+|-------------|------------|----------------------------------------------|
+| **Current**  | Ongoing    | Actively developed, receives all fixes       |
+| **Supported**| 12 months  | Receives security and critical bug fixes     |
+| **Deprecated**| 6 months  | No fixes, returns `Sunset` header            |
+| **Removed**  | —          | Returns 410 Gone                             |
+
+### Breaking Change Definition
+
+A breaking change is any modification that could cause existing clients to fail:
+
+- Removing or renaming a field
+- Changing a field type
+- Removing an endpoint
+- Changing authentication requirements
+
+Non-breaking changes (adding fields, new endpoints) do not require a version bump.
+
+### Implementation
+
+```{mermaid}
+graph TD
+    Client([Client]) -->|/v1/resources| GW[API Gateway]
+    Client -->|/v2/resources| GW
+
+    GW --> V1[v1 Handler]
+    GW --> V2[v2 Handler]
+
+    V1 --> Shared[Shared Business Logic]
+    V2 --> Shared
+    Shared --> DB[(Database)]
+```
+
+- API gateway routes requests to the correct version handler
+- Each version is a separate module/package in the codebase
+- Shared business logic lives in version-independent modules
+
+## Alternatives Considered
+
+- **Header-based versioning** (`Accept: application/vnd.api.v1+json`): Harder to discover and test; URL-based is more explicit.
+- **No versioning**: Unacceptable for a platform with external consumers.
+- **Query parameter versioning** (`?version=1`): Non-standard and easily overlooked.
+
+## Open Questions
+
+- Should internal service-to-service APIs follow the same versioning scheme, or is this only for external APIs?
+- What tooling do we need for automated compatibility checking between versions?

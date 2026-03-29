@@ -1,0 +1,37 @@
+---
+title: "Requests for Comment"
+listing:
+  - id: all-rfcs
+    contents:
+      - "platform/*.qmd"
+      - "infrastructure/*.qmd"
+      - "!*/index.qmd"
+    type: table
+    fields: [title, status, author, date, categories]
+    field-display-names:
+      status: Status
+    sort: "date desc"
+    categories: true
+    filter-ui: true
+    sort-ui:
+      - title
+      - status
+      - author
+      - date
+---
+
+## Requests for Comment (RFCs)
+
+RFCs are design documents that propose significant changes to our systems and processes. They provide a consistent and controlled path for new features and architectural decisions.
+
+### How it works
+
+1. Copy `_template.qmd` into the appropriate project folder with the next sequence number
+2. Fill in the template sections
+3. Submit a pull request for review
+4. Iterate based on feedback until the RFC is accepted or withdrawn
+
+### All RFCs
+
+::: {#all-rfcs}
+:::

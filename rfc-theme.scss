@@ -1,0 +1,98 @@
+/*-- scss:defaults --*/
+
+$font-size-base: 1rem;
+$headings-font-weight: 600;
+
+/*-- scss:rules --*/
+
+// RFC metadata box
+.rfc-metadata {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+
+  dt {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  dd {
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Status badge inline with title, categories on their own line
+.quarto-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem;
+
+  .quarto-categories {
+    flex-basis: 100%;
+    margin-top: 0.25rem;
+  }
+}
+
+.quarto-title .subtitle {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  position: relative;
+  top: -0.15em;
+}
+
+.status-draft .quarto-title .subtitle {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+.status-review .quarto-title .subtitle {
+  background-color: #cff4fc;
+  color: #055160;
+}
+
+.status-accepted .quarto-title .subtitle {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-deprecated .quarto-title .subtitle {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+// Clean typography
+.quarto-title-meta {
+  margin-bottom: 1.5rem;
+}
+
+article h2 {
+  margin-top: 2rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+// Center Mermaid diagrams
+.cell[data-engine="jupyter"] .cell-output-display,
+.quarto-figure,
+.cell .cell-output-display {
+  text-align: center;
+
+  > svg, > div {
+    display: inline-block;
+  }
+}
+
+
+// Table of contents
+#TOC {
+  font-size: 0.9rem;
+}

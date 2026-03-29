@@ -1,0 +1,21 @@
+---
+title: "Platform RFCs"
+listing:
+  - id: platform-rfcs
+    contents:
+      - "*.qmd"
+      - "!index.qmd"
+    type: table
+    fields: [title, status, author, date, categories]
+    field-display-names:
+      status: Status
+    sort: "date desc"
+    categories: true
+    filter-ui: true
+    sort-ui: true
+---
+
+RFCs related to platform services, APIs, and application architecture.
+
+::: {#platform-rfcs}
+:::

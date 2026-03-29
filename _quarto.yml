@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "RFCs"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: platform/index.qmd
+        text: Platform
+      - href: infrastructure/index.qmd
+        text: Infrastructure
+  sidebar:
+    style: floating
+    contents: auto
+
+format:
+  html:
+    theme:
+      - cosmo
+      - rfc-theme.scss
+    embed-resources: true
+    toc: true
+    smooth-scroll: true

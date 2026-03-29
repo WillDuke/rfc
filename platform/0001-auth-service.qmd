@@ -1,0 +1,92 @@
+---
+title: "RFC-0001: Authentication Service"
+author: "Alice Johnson"
+date: 2025-01-15
+status: Accepted
+subtitle: "Accepted"
+body-classes: status-accepted
+categories: [platform, auth]
+---
+
+## Summary
+
+Introduce a dedicated authentication service to centralize user identity, token issuance, and session management across all platform services.
+
+## Motivation
+
+Authentication logic is currently duplicated across multiple services, leading to inconsistent session handling, duplicated security patches, and difficulty onboarding new services. A centralized auth service will:
+
+- Provide a single source of truth for user identity
+- Standardize token formats (JWT) and validation
+- Simplify onboarding for new services
+
+## Detailed Design
+
+### Architecture
+
+The auth service runs as a standalone microservice exposing REST and gRPC APIs. All services validate tokens by calling the auth service or by verifying JWTs locally using a shared public key.
+
+```{mermaid}
+graph LR
+    Client([Client App])
+    Auth[Auth Service]
+    DB[(User Store)]
+    PK[Public Key Cache]
+
+    Client -->|credentials| Auth
+    Auth -->|query| DB
+    Auth -->|issue JWT| Client
+
+    Client -->|request + JWT| SvcA[Service A]
+    Client -->|request + JWT| SvcB[Service B]
+
+    SvcA -->|verify signature| PK
+    SvcB -->|verify signature| PK
+    Auth -.->|publish public key| PK
+```
+
+### Token Flow
+
+```{mermaid}
+sequenceDiagram
+    participant Client
+    participant AuthService
+    participant UserStore
+    participant APIService
+
+    Client->>AuthService: POST /auth/login (credentials)
+    AuthService->>UserStore: Validate credentials
+    UserStore-->>AuthService: User record
+    AuthService-->>Client: Access token (15 min) + Refresh token (7 days)
+
+    Client->>APIService: Request + Access token
+    APIService->>APIService: Verify JWT signature
+    APIService-->>Client: Response
+
+    Note over Client,AuthService: When access token expires...
+    Client->>AuthService: POST /auth/refresh (refresh token)
+    AuthService-->>Client: New access token
+```
+
+### API Endpoints
+
+| Endpoint              | Method | Description            |
+|-----------------------|--------|------------------------|
+| `/auth/login`         | POST   | Authenticate user      |
+| `/auth/refresh`       | POST   | Refresh access token   |
+| `/auth/logout`        | POST   | Revoke refresh token   |
+| `/auth/verify`        | GET    | Verify token validity  |
+
+### Data Model
+
+- **users**: id, email, password_hash, created_at, updated_at
+- **refresh_tokens**: id, user_id, token_hash, expires_at, revoked_at
+
+## Alternatives Considered
+
+- **Shared library approach**: Distributing auth as a library was considered but rejected due to version drift and the inability to revoke sessions centrally.
+- **Third-party auth (Auth0, Firebase)**: Adds external dependency and cost; we need tighter integration with our user model.
+
+## Open Questions
+
+- ~~Should we support OAuth2 for third-party integrations in v1?~~ Decided: No, defer to v2.
