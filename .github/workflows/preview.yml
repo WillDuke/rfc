@@ -2,11 +2,17 @@ name: PR Preview
 
 on:
   pull_request:
-    branches: [main]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+
+concurrency: preview-${{ github.ref }}
 
 jobs:
   preview:
@@ -15,23 +21,14 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: quarto-dev/quarto-actions/setup@v2
+        if: github.event.action != 'closed'
 
       - name: Render site
+        if: github.event.action != 'closed'
         uses: quarto-dev/quarto-actions/render@v2
 
-      - name: Upload preview artifact
-        uses: actions/upload-artifact@v6
+      - uses: rossjrw/pr-preview-action@v1
         with:
-          name: site-preview
-          path: _site/
-
-      - name: Comment on PR
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          header: preview
-          message: |
-            **Site preview rendered successfully.**
-
-            Download the preview artifact from the [Actions run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) to inspect locally.
-
-            _Updated: ${{ github.event.pull_request.head.sha }}_
+          source-dir: ./_site/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
