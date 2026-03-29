@@ -7212,6 +7212,7 @@ z-index: 1000;
   <li><a href="#token-flow" id="toc-token-flow" class="nav-link" data-scroll-target="#token-flow">Token Flow</a></li>
   <li><a href="#api-endpoints" id="toc-api-endpoints" class="nav-link" data-scroll-target="#api-endpoints">API Endpoints</a></li>
   <li><a href="#data-model" id="toc-data-model" class="nav-link" data-scroll-target="#data-model">Data Model</a></li>
+  <li><a href="#rate-limiting" id="toc-rate-limiting" class="nav-link" data-scroll-target="#rate-limiting">Rate Limiting</a></li>
   </ul></li>
   <li><a href="#alternatives-considered" id="toc-alternatives-considered" class="nav-link" data-scroll-target="#alternatives-considered">Alternatives Considered</a></li>
   <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions">Open Questions</a></li>
@@ -7375,6 +7376,37 @@ z-index: 1000;
 <li><strong>users</strong>: id, email, password_hash, created_at, updated_at</li>
 <li><strong>refresh_tokens</strong>: id, user_id, token_hash, expires_at, revoked_at</li>
 </ul>
+</section>
+<section id="rate-limiting" class="level3">
+<h3 class="anchored" data-anchor-id="rate-limiting">Rate Limiting</h3>
+<p>To protect against brute-force attacks, the auth service enforces rate limits on authentication endpoints:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Endpoint</th>
+<th>Limit</th>
+<th>Window</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>/auth/login</code></td>
+<td>10 attempts</td>
+<td>15 min</td>
+</tr>
+<tr class="even">
+<td><code>/auth/refresh</code></td>
+<td>30 requests</td>
+<td>1 min</td>
+</tr>
+<tr class="odd">
+<td><code>/auth/verify</code></td>
+<td>100 requests</td>
+<td>1 min</td>
+</tr>
+</tbody>
+</table>
+<p>After exceeding the limit, the service returns <code>429 Too Many Requests</code> with a <code>Retry-After</code> header.</p>
 </section>
 </section>
 <section id="alternatives-considered" class="level2">
