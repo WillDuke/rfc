@@ -96,6 +96,14 @@ graph TD
 - **ArgoCD for everything**: Better suited for Kubernetes deployments but doesn't replace CI for build/test stages.
 - **Per-repo pipelines**: Simpler initially but leads to drift and duplication across teams.
 
+### Notifications
+
+Pipeline results are reported to the team via:
+
+- **GitHub commit status checks** on every push
+- **Slack notifications** to `#deploys` on production deployments
+- **PagerDuty alerts** if a production deployment fails and auto-rollback is triggered
+
 ## Open Questions
 
 - Should we use self-hosted runners for performance-sensitive builds, or are GitHub-hosted runners sufficient?
