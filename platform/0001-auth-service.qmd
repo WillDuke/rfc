@@ -82,6 +82,18 @@ sequenceDiagram
 - **users**: id, email, password_hash, created_at, updated_at
 - **refresh_tokens**: id, user_id, token_hash, expires_at, revoked_at
 
+### Rate Limiting
+
+To protect against brute-force attacks, the auth service enforces rate limits on authentication endpoints:
+
+| Endpoint         | Limit              | Window  |
+|------------------|--------------------|---------|
+| `/auth/login`    | 10 attempts        | 15 min  |
+| `/auth/refresh`  | 30 requests        | 1 min   |
+| `/auth/verify`   | 100 requests       | 1 min   |
+
+After exceeding the limit, the service returns `429 Too Many Requests` with a `Retry-After` header.
+
 ## Alternatives Considered
 
 - **Shared library approach**: Distributing auth as a library was considered but rejected due to version drift and the inability to revoke sessions centrally.
